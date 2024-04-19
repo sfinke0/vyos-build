@@ -74,7 +74,7 @@ jobs:
         run: |
           echo "tag-name=${{ steps.version.outputs.vyos-version }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}" >> "$GITHUB_OUTPUT"
           echo "generated-iso-name=vyos-${{ steps.version.outputs.vyos-version }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}-amd64" >> "$GITHUB_OUTPUT"
-          echo "target-iso-name=vyos-${{ steps.version.outputs.vyos-version }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}.amd64" >> "$GITHUB_OUTPUT"
+          echo "target-iso-name=vyos-${{ env.VYOS_TAG }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}.amd64" >> "$GITHUB_OUTPUT"
 
       - name: Clone vyos-build
         id: clone-vyos
