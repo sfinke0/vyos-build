@@ -18,8 +18,11 @@ env:
   VYOS_URL: https://github.com/vyos/vyos-build
   VYOS_BRANCH: sagitta
   VYOS_ARCH: amd64
-  VYOS_BUILD_BY: autobuild-vyos@whydontyou.work
+  VYOS_BUILD_BY: autobuild-vyos@finke-it.net
   VYOS_BUILD_TYPE: release
+  VYOS_TAG: 1.4.0-epa2
+  # renovate: datasource=github-releases depName=accel-ppp/accel-ppp
+  ACCEL_PPP_VERSION: 1.13.0
   # renovate: datasource=github-releases depName=getsops/sops
   SOPS_VERSION: v3.8.1
   # renovate: datasource=github-releases depName=p3lim/vyaml
@@ -53,7 +56,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          VYOS_TAG=${{ inputs.LTS_TAG || vars.LTS_TAG }}
+          VYOS_TAG=${{ env.VYOS_TAG }}
           VYOS_VERSION=${VYOS_TAG%-*}
           echo "vyos-version=${VYOS_VERSION}" >> "$GITHUB_OUTPUT"
           echo "vyos-version-sanitized=${VYOS_VERSION//./_}" >> "$GITHUB_OUTPUT"
@@ -69,20 +72,20 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "tag-name=${{ steps.version.outputs.vyos-version }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}" >> "$GITHUB_OUTPUT"
-          echo "generated-iso-name=vyos-${{ steps.version.outputs.vyos-version }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}-amd64" >> "$GITHUB_OUTPUT"
-          echo "target-iso-name=vyos-${{ steps.version.outputs.vyos-version }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}.amd64" >> "$GITHUB_OUTPUT"
+          echo "tag-name=${{ env.VYOS_TAG }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}" >> "$GITHUB_OUTPUT"
+          echo "generated-iso-name=vyos-${{ env.VYOS_TAG }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}-amd64" >> "$GITHUB_OUTPUT"
+          echo "target-iso-name=vyos-${{ env.VYOS_TAG }}+${{ github.repository_owner }}.${{ steps.buildnumber.outputs.value }}.amd64" >> "$GITHUB_OUTPUT"
 
       - name: Clone vyos-build
         id: clone-vyos
         run: |
-          git clone -b ${{ inputs.LTS_TAG || vars.LTS_TAG }} --depth 1 --single-branch ${{ env.VYOS_URL }}
+          git clone -b ${{ env.VYOS_BRANCH }} --depth 1 --single-branch ${{ env.VYOS_URL }}
           echo "vyos_kernel_version=$(awk -v key="kernel_version" '$1 == key {gsub(/"/, "", $3); print $3}' "vyos-build/data/defaults.toml")" > "$GITHUB_OUTPUT"
 
       - name: Switch to tag
         shell: bash
         working-directory: vyos-build
-        run: git switch -c "${{ inputs.LTS_TAG || vars.LTS_TAG }}"
+        run: git switch -c "${{ env.VYOS_TAG }}"
 
       - name: Download sops deb
         uses: robinraju/release-downloader@v1.9
@@ -177,7 +180,7 @@ jobs:
         run: |
           rm -rf accel-ppp
           git clone https://github.com/accel-ppp/accel-ppp.git
-          cd accel-ppp && git checkout 19c36e593d9b && cd ..
+          cd accel-ppp && git checkout $ACCEL_PPP_VERSION && cd ..
           ./build-accel-ppp.sh
   
       - name: Compile Intel QAT (Quick-Assist Technology) drivers
@@ -252,7 +255,6 @@ jobs:
               --build-comment "VyOS with additional packages and custom kernel" \
               --version ${{ steps.vars.outputs.tag-name }} \
               --custom-package "git" \
-              --custom-package "iptables" \
               --custom-package "jo" \
               --custom-package "vim" \
               --custom-package "moreutils" \
@@ -302,4 +304,4 @@ jobs:
         with:
           name: VYOS_LTS_${{ steps.version.outputs.vyos-version-sanitized }}_BUILD
           token: ${{ steps.app-token.outputs.token }}
-          amount: -1  
+          amount: -1
