@@ -18,8 +18,10 @@ env:
   VYOS_URL: https://github.com/vyos/vyos-build
   VYOS_BRANCH: sagitta
   VYOS_ARCH: amd64
-  VYOS_BUILD_BY: autobuild-vyos@whydontyou.work
+  VYOS_BUILD_BY: autobuild-vyos@finke-it.net
   VYOS_BUILD_TYPE: release
+  # renovate: datasource=github-releases depName=accel-ppp/accel-ppp
+  ACCEL_PPP_VERSION: 1.13.0
   # renovate: datasource=github-releases depName=getsops/sops
   SOPS_VERSION: v3.8.1
   # renovate: datasource=github-releases depName=p3lim/vyaml
@@ -177,7 +179,7 @@ jobs:
         run: |
           rm -rf accel-ppp
           git clone https://github.com/accel-ppp/accel-ppp.git
-          cd accel-ppp && git checkout 19c36e593d9b && cd ..
+          cd accel-ppp && git checkout $ACCEL_PPP_VERSION && cd ..
           ./build-accel-ppp.sh
   
       - name: Compile Intel QAT (Quick-Assist Technology) drivers
@@ -252,7 +254,6 @@ jobs:
               --build-comment "VyOS with additional packages and custom kernel" \
               --version ${{ steps.vars.outputs.tag-name }} \
               --custom-package "git" \
-              --custom-package "iptables" \
               --custom-package "jo" \
               --custom-package "vim" \
               --custom-package "moreutils" \
@@ -302,4 +303,4 @@ jobs:
         with:
           name: VYOS_LTS_${{ steps.version.outputs.vyos-version-sanitized }}_BUILD
           token: ${{ steps.app-token.outputs.token }}
-          amount: -1  
+          amount: -1
