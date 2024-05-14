@@ -20,7 +20,7 @@ env:
   VYOS_ARCH: amd64
   VYOS_BUILD_BY: autobuild-vyos@finke-it.net
   VYOS_BUILD_TYPE: release
-  VYOS_TAG: 1.4.0-epa2
+  VYOS_TAG: 1.4.0-epa3
   # renovate: datasource=github-releases depName=accel-ppp/accel-ppp
   ACCEL_PPP_VERSION: 1.13.0
   # renovate: datasource=github-releases depName=getsops/sops
